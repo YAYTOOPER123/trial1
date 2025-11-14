@@ -1,13 +1,15 @@
 import React from "react";
 import axios from "axios";
-import { Typography, Alert, Grid, Card, CardContent, Chip, Box, Avatar } from "@mui/material";
+import { Typography, Alert, Grid, Card, CardContent, Chip, Box, Avatar, CardActionArea } from "@mui/material";
 import { Person, Email, AccountCircle } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import App from "../App.tsx";
 import { EntityModelStudent } from "../api/index";
 import { API_ENDPOINT } from "../config";
 import AddStudent from "./AddStudent";
 
 function Students() {
+  const navigate = useNavigate();
   const [students, setStudents] = React.useState<EntityModelStudent[]>([]);
   const [error, setError] = React.useState<string>();
 
@@ -73,10 +75,12 @@ function Students() {
                     "&:hover": {
                       transform: "translateY(-4px)",
                       boxShadow: "0 12px 24px rgba(0,0,0,0.15)",
+                      cursor: "pointer",
                     },
                   }}
                 >
-                  <CardContent>
+                  <CardActionArea onClick={() => navigate(`/students/${s.id}`)}>
+                    <CardContent>
                     <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                       <Avatar
                         sx={{
@@ -120,6 +124,7 @@ function Students() {
                       </Box>
                     </Box>
                   </CardContent>
+                  </CardActionArea>
                 </Card>
               </Grid>
             ))}

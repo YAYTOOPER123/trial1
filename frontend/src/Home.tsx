@@ -1,5 +1,5 @@
 import { Box, Typography, Card, CardContent, Grid, CardActionArea } from "@mui/material";
-import { School, Person, Grade as GradeIcon, Dashboard as DashboardIcon } from "@mui/icons-material";
+import { School, Person, Grade as GradeIcon, Dashboard as DashboardIcon, AppRegistration } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import App from "./App";
 
@@ -15,6 +15,13 @@ function Home() {
       color: "#3498db",
     },
     {
+      title: "Students",
+      description: "View and manage student information",
+      icon: <Person sx={{ fontSize: 60 }} />,
+      path: "/students",
+      color: "#9b59b6",
+    },
+    {
       title: "Modules",
       description: "Manage course modules and curriculum",
       icon: <School sx={{ fontSize: 60 }} />,
@@ -22,11 +29,11 @@ function Home() {
       color: "#2ecc71",
     },
     {
-      title: "Students",
-      description: "View and manage student information",
-      icon: <Person sx={{ fontSize: 60 }} />,
-      path: "/students",
-      color: "#9b59b6",
+      title: "Registrations",
+      description: "Register students for modules",
+      icon: <AppRegistration sx={{ fontSize: 60 }} />,
+      path: "/registrations",
+      color: "#e67e22",
     },
     {
       title: "Grades",
@@ -57,9 +64,9 @@ function Home() {
         </Typography>
       </Box>
 
-      <Grid container spacing={4} sx={{ mt: 2 }}>
+      <Grid container spacing={3} sx={{ mt: 2 }}>
         {cards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={3} key={card.title}>
+          <Grid item xs={12} sm={6} md={4} lg={2.4} key={card.title}>
             <Card
               sx={{
                 height: "100%",

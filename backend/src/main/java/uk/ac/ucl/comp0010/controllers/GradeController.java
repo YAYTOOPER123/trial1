@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import uk.ac.ucl.comp0010.model.Module;
 import uk.ac.ucl.comp0010.model.Student;
 import uk.ac.ucl.comp0010.repository.GradeRepository;
 import uk.ac.ucl.comp0010.repository.ModuleRepository;
+import uk.ac.ucl.comp0010.repository.RegistrationRepository;
 import uk.ac.ucl.comp0010.repository.StudentRepository;
 
 /**
@@ -23,11 +25,13 @@ import uk.ac.ucl.comp0010.repository.StudentRepository;
  */
 @RestController
 @RequestMapping("/grades")
+@CrossOrigin(origins = "*")
 public class GradeController {
 
   private final GradeRepository gradeRepository;
   private final StudentRepository studentRepository;
   private final ModuleRepository moduleRepository;
+  private final RegistrationRepository registrationRepository;
 
   /**
    * Constructs a GradeController with required repositories.
@@ -35,13 +39,16 @@ public class GradeController {
    * @param gradeRepository the grade repository
    * @param studentRepository the student repository
    * @param moduleRepository the module repository
+   * @param registrationRepository the registration repository
    */
   public GradeController(GradeRepository gradeRepository,
       StudentRepository studentRepository,
-      ModuleRepository moduleRepository) {
+      ModuleRepository moduleRepository,
+      RegistrationRepository registrationRepository) {
     this.gradeRepository = gradeRepository;
     this.studentRepository = studentRepository;
     this.moduleRepository = moduleRepository;
+    this.registrationRepository = registrationRepository;
   }
 
 
@@ -63,6 +70,11 @@ public class GradeController {
     Module module = moduleRepository.findById(moduleCode)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Module not found"));
+
+    if (!registrationRepository.existsByStudentAndModule(student, module)) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Student must be registered for this module before receiving a grade");
+    }
 
     Grade grade = new Grade();
     grade.setScore(score);

@@ -20,24 +20,20 @@ import {
 } from "../api/index";
 import { API_ENDPOINT } from "../config";
 
+interface Registration {
+  id: number;
+  student: EntityModelStudent;
+  module: EntityModelModule;
+}
+
 function AddGrade(props: { update: Function }) {
   const [grade, setGrade] = React.useState<AddGradeBody>({});
-  const [students, setStudents] = React.useState<EntityModelStudent[]>([]);
   const [modules, setModules] = React.useState<EntityModelModule[]>([]);
+  const [registrations, setRegistrations] = React.useState<Registration[]>([]);
   const [error, setError] = React.useState<string>();
   const [success, setSuccess] = React.useState(false);
 
   React.useEffect(() => {
-    axios
-      .get(`${API_ENDPOINT}/students`)
-      .then((response) => {
-        setStudents(response.data);
-      })
-      .catch((err) => {
-        const errorMsg = err.response?.data?.message || err.message || "Failed to load students";
-        setError(errorMsg);
-      });
-
     axios
       .get(`${API_ENDPOINT}/modules`)
       .then((response) => setModules(response.data))
@@ -45,7 +41,22 @@ function AddGrade(props: { update: Function }) {
         const errorMsg = err.response?.data?.message || err.message || "Failed to load modules";
         setError(errorMsg);
       });
+
+    axios
+      .get(`${API_ENDPOINT}/registrations`)
+      .then((response) => setRegistrations(response.data))
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to load registrations";
+        setError(errorMsg);
+      });
   }, []);
+
+  const eligibleStudents = React.useMemo(() => {
+    if (!grade.module_code) return [];
+    return registrations
+      .filter((reg) => reg.module.code === grade.module_code)
+      .map((reg) => reg.student);
+  }, [grade.module_code, registrations]);
 
   function request() {
     setError(undefined);
@@ -93,30 +104,33 @@ function AddGrade(props: { update: Function }) {
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <FormControl fullWidth>
+          <InputLabel>Module</InputLabel>
+          <Select
+            value={grade.module_code ?? ""}
+            onChange={(e) => setGrade({ ...grade, module_code: e.target.value, student_id: "" })}
+            label="Module"
+          >
+            {modules.map((m) => (
+              <MenuItem key={m.code} value={m.code}>
+                {`${m.code} - ${m.name}`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth disabled={!grade.module_code}>
           <InputLabel>Student</InputLabel>
           <Select
             value={grade.student_id ?? ""}
             onChange={(e) => setGrade({ ...grade, student_id: e.target.value })}
             label="Student"
           >
-            {students.map((s) => (
+            {eligibleStudents.length === 0 && grade.module_code && (
+              <MenuItem disabled>No registered students for this module</MenuItem>
+            )}
+            {eligibleStudents.map((s) => (
               <MenuItem key={s.id} value={s.id}>
                 {`${s.firstName} ${s.lastName} (${s.id})`}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth>
-          <InputLabel>Module</InputLabel>
-          <Select
-            value={grade.module_code ?? ""}
-            onChange={(e) => setGrade({ ...grade, module_code: e.target.value })}
-            label="Module"
-          >
-            {modules.map((m) => (
-              <MenuItem key={m.code} value={m.code}>
-                {`${m.code} - ${m.name}`}
               </MenuItem>
             ))}
           </Select>

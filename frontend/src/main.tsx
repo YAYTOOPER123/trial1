@@ -9,14 +9,18 @@ import Home from "./Home";
 import Dashboard from "./Dashboard";
 import Modules from "./module/Modules";
 import Students from "./student/Students";
+import StudentInspect from "./student/StudentInspect";
 import Grades from "./grade/Grades";
+import Registrations from "./registration/Registrations";
 
 const router = createBrowserRouter([
   { path: "/", element: <Home /> },
   { path: "/dashboard", element: <Dashboard /> },
   { path: "/modules", element: <Modules /> },
   { path: "/students", element: <Students /> },
+  { path: "/students/:id", element: <StudentInspect /> },
   { path: "/grades", element: <Grades /> },
+  { path: "/registrations", element: <Registrations /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(
