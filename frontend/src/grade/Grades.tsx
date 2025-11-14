@@ -1,7 +1,27 @@
 import React from "react";
 import axios from "axios";
-import { Typography, Alert, Grid, Card, CardContent, Box, Chip, Avatar } from "@mui/material";
-import { Grade as GradeIcon, EmojiEvents, School, Person } from "@mui/icons-material";
+import {
+  Typography,
+  Alert,
+  Grid,
+  Card,
+  CardContent,
+  Box,
+  Chip,
+  Avatar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+} from "@mui/material";
+import { Grade as GradeIcon, EmojiEvents, School, Person, Edit, Delete } from "@mui/icons-material";
 import App from "../App.tsx";
 import { API_ENDPOINT } from "../config";
 import AddGrade from "./AddGrade";
@@ -23,13 +43,37 @@ interface Grade {
   };
 }
 
+interface Module {
+  code: string;
+  name: string;
+  mnc: boolean;
+}
+
 function Grades() {
   const [grades, setGrades] = React.useState<Grade[]>([]);
+  const [modules, setModules] = React.useState<Module[]>([]);
+  const [selectedModule, setSelectedModule] = React.useState<string>("");
   const [error, setError] = React.useState<string>();
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [selectedGrade, setSelectedGrade] = React.useState<Grade | null>(null);
+  const [editScore, setEditScore] = React.useState<number>(0);
 
   React.useEffect(() => {
     updateGrades();
+    loadModules();
   }, []);
+
+  function loadModules() {
+    axios
+      .get(`${API_ENDPOINT}/modules`)
+      .then((response) => {
+        setModules(response.data);
+      })
+      .catch((err) => {
+        console.error("Error loading modules:", err);
+      });
+  }
 
   function updateGrades() {
     axios
@@ -67,6 +111,58 @@ function Grades() {
     return colors[(id ?? 0) % colors.length];
   }
 
+  const filteredGrades = React.useMemo(() => {
+    if (!selectedModule) return grades;
+    return grades.filter((g) => g.module.code === selectedModule);
+  }, [selectedModule, grades]);
+
+  function handleEditClick(grade: Grade) {
+    setSelectedGrade(grade);
+    setEditScore(grade.score);
+    setEditDialogOpen(true);
+  }
+
+  function handleDeleteClick(grade: Grade) {
+    setSelectedGrade(grade);
+    setDeleteDialogOpen(true);
+  }
+
+  function handleEditSave() {
+    if (!selectedGrade) return;
+    if (editScore < 0 || editScore > 100) {
+      setError("Score must be between 0 and 100");
+      return;
+    }
+
+    axios
+      .put(`${API_ENDPOINT}/grades/${selectedGrade.id}`, { score: editScore })
+      .then(() => {
+        updateGrades();
+        setEditDialogOpen(false);
+        setSelectedGrade(null);
+      })
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to update grade";
+        setError(errorMsg);
+      });
+  }
+
+  function handleDeleteConfirm() {
+    if (!selectedGrade) return;
+
+    axios
+      .delete(`${API_ENDPOINT}/grades/${selectedGrade.id}`)
+      .then(() => {
+        updateGrades();
+        setDeleteDialogOpen(false);
+        setSelectedGrade(null);
+      })
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to delete grade";
+        setError(errorMsg);
+      });
+  }
+
   return (
     <App>
       <Box sx={{ mb: 4 }}>
@@ -82,7 +178,25 @@ function Grades() {
 
       <Grid container spacing={3}>
         <Grid item xs={12} lg={8}>
-          {!error && grades.length < 1 && (
+          <Box sx={{ mb: 3 }}>
+            <FormControl fullWidth sx={{ background: "white", borderRadius: 2 }}>
+              <InputLabel>Filter by Module</InputLabel>
+              <Select
+                value={selectedModule}
+                onChange={(e) => setSelectedModule(e.target.value)}
+                label="Filter by Module"
+              >
+                <MenuItem value="">All Modules</MenuItem>
+                {modules.map((m) => (
+                  <MenuItem key={m.code} value={m.code}>
+                    {`${m.code} - ${m.name}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {!error && filteredGrades.length < 1 && (
             <Card sx={{ borderRadius: 3, p: 4, textAlign: "center" }}>
               <GradeIcon sx={{ fontSize: 80, color: "#ccc", mb: 2 }} />
               <Typography variant="h6" color="text.secondary">No grades yet</Typography>
@@ -91,7 +205,7 @@ function Grades() {
           )}
 
           <Grid container spacing={2}>
-            {grades.map((g, index) => (
+            {filteredGrades.map((g, index) => (
               <Grid item xs={12} key={g.id}>
                 <Card
                   sx={{
@@ -189,6 +303,29 @@ function Grades() {
                           }}
                         />
                       </Box>
+
+                      <Box sx={{ display: "flex", gap: 1, flexDirection: "column" }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditClick(g)}
+                          sx={{
+                            bgcolor: "rgba(52, 152, 219, 0.1)",
+                            "&:hover": { bgcolor: "rgba(52, 152, 219, 0.2)" },
+                          }}
+                        >
+                          <Edit sx={{ fontSize: 18, color: "#3498db" }} />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteClick(g)}
+                          sx={{
+                            bgcolor: "rgba(231, 76, 60, 0.1)",
+                            "&:hover": { bgcolor: "rgba(231, 76, 60, 0.2)" },
+                          }}
+                        >
+                          <Delete sx={{ fontSize: 18, color: "#e74c3c" }} />
+                        </IconButton>
+                      </Box>
                     </Box>
                   </CardContent>
                 </Card>
@@ -201,6 +338,47 @@ function Grades() {
           <AddGrade update={updateGrades} />
         </Grid>
       </Grid>
+
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+        <DialogTitle>Edit Grade</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <TextField
+              fullWidth
+              label="Score"
+              type="number"
+              value={editScore}
+              onChange={(e) => setEditScore(parseInt(e.target.value))}
+              inputProps={{ min: 0, max: 100 }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleEditSave} variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Delete Grade</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this grade for{" "}
+            <strong>
+              {selectedGrade?.student.firstName} {selectedGrade?.student.lastName}
+            </strong>{" "}
+            in <strong>{selectedGrade?.module.code}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </App>
   );
 }

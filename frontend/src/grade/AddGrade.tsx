@@ -61,8 +61,15 @@ function AddGrade(props: { update: Function }) {
   function request() {
     setError(undefined);
     setSuccess(false);
+
+    const score = parseInt(grade.score as any);
+    if (isNaN(score) || score < 0 || score > 100) {
+      setError("Score must be between 0 and 100");
+      return;
+    }
+
     axios
-      .post(`${API_ENDPOINT}/grades/addGrade`, grade)
+      .post(`${API_ENDPOINT}/grades/addGrade`, { ...grade, score })
       .then(() => {
         setSuccess(true);
         setGrade({});
