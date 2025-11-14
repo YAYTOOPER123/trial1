@@ -1,5 +1,5 @@
 import { Box, Typography, Card, CardContent, Grid, CardActionArea } from "@mui/material";
-import { School, Person, Grade as GradeIcon } from "@mui/icons-material";
+import { School, Person, Grade as GradeIcon, Dashboard as DashboardIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import App from "./App";
 
@@ -8,25 +8,32 @@ function Home() {
 
   const cards = [
     {
+      title: "Dashboard",
+      description: "View analytics and recent activity",
+      icon: <DashboardIcon sx={{ fontSize: 60 }} />,
+      path: "/dashboard",
+      color: "#3498db",
+    },
+    {
       title: "Modules",
       description: "Manage course modules and curriculum",
       icon: <School sx={{ fontSize: 60 }} />,
       path: "/modules",
-      color: "#4CAF50",
+      color: "#2ecc71",
     },
     {
       title: "Students",
       description: "View and manage student information",
       icon: <Person sx={{ fontSize: 60 }} />,
       path: "/students",
-      color: "#2196F3",
+      color: "#9b59b6",
     },
     {
       title: "Grades",
       description: "Track and record student grades",
       icon: <GradeIcon sx={{ fontSize: 60 }} />,
       path: "/grades",
-      color: "#FF9800",
+      color: "#e74c3c",
     },
   ];
 
@@ -37,28 +44,31 @@ function Home() {
           variant="h2"
           sx={{
             color: "white",
-            fontWeight: 800,
+            fontWeight: 900,
             mb: 2,
-            textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+            textShadow: "0 4px 12px rgba(0,0,0,0.4)",
+            letterSpacing: "-1px",
           }}
         >
-          Welcome to Grade Manager
+          Welcome to GradeHub
         </Typography>
-        <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.9)" }}>
-          Your comprehensive student management solution
+        <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.7)", fontWeight: 400 }}>
+          Your modern student management solution
         </Typography>
       </Box>
 
       <Grid container spacing={4} sx={{ mt: 2 }}>
         {cards.map((card, index) => (
-          <Grid item xs={12} md={4} key={card.title}>
+          <Grid item xs={12} sm={6} md={3} key={card.title}>
             <Card
               sx={{
                 height: "100%",
-                background: "white",
+                background: "rgba(255,255,255,0.05)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: 4,
-                transition: "all 0.3s ease-in-out",
-                animation: `slideIn 0.5s ease-out ${index * 0.1}s both`,
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                animation: `slideIn 0.6s ease-out ${index * 0.1}s both`,
                 "@keyframes slideIn": {
                   from: {
                     opacity: 0,
@@ -70,8 +80,10 @@ function Home() {
                   },
                 },
                 "&:hover": {
-                  transform: "translateY(-10px)",
-                  boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+                  transform: "translateY(-12px) scale(1.02)",
+                  boxShadow: `0 20px 40px ${card.color}44`,
+                  border: `1px solid ${card.color}66`,
+                  background: "rgba(255,255,255,0.08)",
                 },
               }}
             >
@@ -100,10 +112,10 @@ function Home() {
                   >
                     {card.icon}
                   </Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: card.color }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: "white" }}>
                     {card.title}
                   </Typography>
-                  <Typography variant="body1" sx={{ color: "text.secondary", textAlign: "center" }}>
+                  <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.7)", textAlign: "center" }}>
                     {card.description}
                   </Typography>
                 </CardContent>
