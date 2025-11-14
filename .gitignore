@@ -40,3 +40,4 @@ backend/build/
 
 ### VS Code ###
 .vscode/
+.env
