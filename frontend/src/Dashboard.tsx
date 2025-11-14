@@ -44,18 +44,18 @@ function Dashboard() {
 
   React.useEffect(() => {
     Promise.all([
-      axios.get(`${API_ENDPOINT}/grades`),
-      axios.get(`${API_ENDPOINT}/students`),
-      axios.get(`${API_ENDPOINT}/modules`),
+      axios.get(`${API_ENDPOINT}/grades`).catch(() => ({ data: [] })),
+      axios.get(`${API_ENDPOINT}/students`).catch(() => ({ data: [] })),
+      axios.get(`${API_ENDPOINT}/modules`).catch(() => ({ data: [] })),
     ])
       .then(([gradesRes, studentsRes, modulesRes]) => {
-        setGrades(gradesRes.data);
-        setStudents(studentsRes.data);
-        setModules(modulesRes.data);
+        setGrades(Array.isArray(gradesRes.data) ? gradesRes.data : []);
+        setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
+        setModules(Array.isArray(modulesRes.data) ? modulesRes.data : []);
         setLoading(false);
       })
       .catch((error) => {
-        console.error(error);
+        console.error("Dashboard error:", error);
         setLoading(false);
       });
   }, []);

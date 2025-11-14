@@ -30,8 +30,10 @@ function AddModule(props: { update: Function }) {
         props.update();
         setTimeout(() => setSuccess(false), 3000);
       })
-      .catch((response) => {
-        setError(response.message);
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to add module";
+        setError(errorMsg);
+        console.error("Error adding module:", err.response?.data || err);
       });
   }
 

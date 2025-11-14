@@ -21,8 +21,10 @@ function AddStudent(props: { update: Function }) {
         props.update();
         setTimeout(() => setSuccess(false), 3000);
       })
-      .catch((response) => {
-        setError(response.message);
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to add student";
+        setError(errorMsg);
+        console.error("Error adding student:", err.response?.data || err);
       });
   }
 

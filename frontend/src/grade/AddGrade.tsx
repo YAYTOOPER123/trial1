@@ -33,12 +33,18 @@ function AddGrade(props: { update: Function }) {
       .then((response) => {
         setStudents(response.data);
       })
-      .catch((error) => setError(error.message));
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to load students";
+        setError(errorMsg);
+      });
 
     axios
       .get(`${API_ENDPOINT}/modules`)
       .then((response) => setModules(response.data))
-      .catch((error) => setError(error.message));
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to load modules";
+        setError(errorMsg);
+      });
   }, []);
 
   function request() {
@@ -52,8 +58,10 @@ function AddGrade(props: { update: Function }) {
         props.update();
         setTimeout(() => setSuccess(false), 3000);
       })
-      .catch((error) => {
-        setError(error.message);
+      .catch((err) => {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to add grade";
+        setError(errorMsg);
+        console.error("Error adding grade:", err.response?.data || err);
       });
   }
 
